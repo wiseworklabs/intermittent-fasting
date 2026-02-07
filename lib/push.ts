@@ -118,6 +118,7 @@ export async function unsubscribeFromPush(): Promise<boolean> {
 
 export async function sendTestPush(): Promise<{ success: boolean; message: string }> {
     try {
+        console.log("[Push] Sending test push...");
         const response = await fetch("/api/push/send", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -127,19 +128,28 @@ export async function sendTestPush(): Promise<{ success: boolean; message: strin
             }),
         });
 
-        const data = await response.json();
+        console.log("[Push] Send response status:", response.status);
 
         if (!response.ok) {
-            return { success: false, message: data.error || "Failed to send notification" };
+            let errorMessage = `서버 에러 (${response.status})`;
+            try {
+                const data = await response.json();
+                errorMessage = data.error || errorMessage;
+            } catch {
+                // Response wasn't JSON
+            }
+            return { success: false, message: errorMessage };
         }
 
+        const data = await response.json();
         return {
             success: true,
             message: `알림 전송 완료 (${data.sent}/${data.total})`
         };
     } catch (error) {
-        console.error("Failed to send test push:", error);
-        return { success: false, message: "네트워크 오류" };
+        console.error("[Push] Failed to send test push:", error);
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        return { success: false, message: `네트워크 오류: ${errorMessage}` };
     }
 }
 
