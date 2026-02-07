@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Zap, LogIn, LogOut, RefreshCw } from "lucide-react";
 import { useSession, signIn, signOut } from "next-auth/react";
 
-const APP_VERSION = "1.0.4";
+const APP_VERSION = "1.0.5";
 
 export default function TopBar() {
     const { data: session } = useSession();

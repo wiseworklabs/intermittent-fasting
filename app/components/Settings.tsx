@@ -46,16 +46,17 @@ export default function Settings({ currentGoal, onUpdateGoal }: SettingsProps) {
             }
         }
 
-        const subscription = await subscribeToPush();
-        if (subscription) {
+        const result = await subscribeToPush();
+        if (result.success) {
             setIsSubscribed(true);
             setPushStatus("success");
             setPushMessage("푸시 알림이 활성화되었습니다!");
             showToast("푸시 알림이 활성화되었습니다!", "success");
         } else {
             setPushStatus("error");
-            setPushMessage("푸시 등록에 실패했습니다");
-            showError("푸시 등록에 실패했습니다. 콘솔을 확인하세요.");
+            const errorMsg = result.error || "푸시 등록에 실패했습니다";
+            setPushMessage(errorMsg);
+            showError(errorMsg);
         }
     };
 

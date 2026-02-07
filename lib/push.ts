@@ -1,11 +1,16 @@
 // Helper to manage push notification subscriptions
 
-export async function subscribeToPush(): Promise<PushSubscription | null> {
+export interface PushResult {
+    success: boolean;
+    subscription?: PushSubscription;
+    error?: string;
+}
+
+export async function subscribeToPush(): Promise<PushResult> {
     console.log("[Push] Starting subscription process...");
 
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-        console.warn("[Push] Push notifications are not supported");
-        return null;
+        return { success: false, error: "이 브라우저는 푸시 알림을 지원하지 않습니다" };
     }
 
     try {
@@ -32,8 +37,7 @@ export async function subscribeToPush(): Promise<PushSubscription | null> {
             console.log("[Push] VAPID public key available:", !!publicKey);
 
             if (!publicKey) {
-                console.error("[Push] VAPID public key not found");
-                return null;
+                return { success: false, error: "VAPID 키가 설정되지 않았습니다" };
             }
 
             console.log("[Push] Creating new subscription...");
@@ -57,14 +61,15 @@ export async function subscribeToPush(): Promise<PushSubscription | null> {
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
             console.error("[Push] Failed to save subscription:", errorData);
-            return null;
+            return { success: false, error: `서버 저장 실패: ${response.status} - ${errorData.error || "Unknown error"}` };
         }
 
         console.log("[Push] Subscription saved successfully!");
-        return subscription;
+        return { success: true, subscription };
     } catch (error) {
         console.error("[Push] Failed to subscribe:", error);
-        return null;
+        const errorMessage = error instanceof Error ? error.message : "알 수 없는 에러";
+        return { success: false, error: `푸시 등록 실패: ${errorMessage}` };
     }
 }
 
