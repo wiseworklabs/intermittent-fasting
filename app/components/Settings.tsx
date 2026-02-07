@@ -16,20 +16,73 @@ export default function Settings({ currentGoal, onUpdateGoal }: SettingsProps) {
     const [pushStatus, setPushStatus] = useState<"idle" | "subscribing" | "sending" | "success" | "error">("idle");
     const [pushMessage, setPushMessage] = useState("");
     const [isSubscribed, setIsSubscribed] = useState(false);
+    const [swAvailable, setSwAvailable] = useState<boolean | null>(null); // null = checking
     const { showToast, showError } = useToast();
 
     const isAdmin = session?.user?.email?.endsWith("@wiseworklabs.com");
 
-    // Check if already subscribed to push
+    // Check SW availability and subscription status on mount
     useEffect(() => {
-        if ("serviceWorker" in navigator && "PushManager" in window) {
-            navigator.serviceWorker.ready.then((registration) => {
-                registration.pushManager.getSubscription().then((subscription) => {
-                    setIsSubscribed(!!subscription);
-                });
-            });
-        }
+        const checkPushSupport = async () => {
+            if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+                setSwAvailable(false);
+                return;
+            }
+
+            try {
+                // Check if any SW is registered
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                if (registrations.length === 0) {
+                    // Try to register
+                    try {
+                        await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+                    } catch {
+                        setSwAvailable(false);
+                        return;
+                    }
+                }
+
+                // Wait for SW to be ready (with timeout)
+                const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000));
+                const registration = await Promise.race([
+                    navigator.serviceWorker.ready,
+                    timeoutPromise
+                ]);
+
+                if (!registration) {
+                    setSwAvailable(false);
+                    return;
+                }
+
+                setSwAvailable(true);
+
+                // Check existing subscription
+                const subscription = await (registration as ServiceWorkerRegistration).pushManager.getSubscription();
+                setIsSubscribed(!!subscription);
+            } catch {
+                setSwAvailable(false);
+            }
+        };
+
+        checkPushSupport();
     }, []);
+
+    // Function to send test and show result
+    const sendTestAndShowResult = async () => {
+        setPushStatus("sending");
+        setPushMessage("테스트 알림 전송 중...");
+
+        const result = await sendTestPush();
+        if (result.success) {
+            setPushStatus("success");
+            setPushMessage(result.message);
+            showToast(result.message, "success");
+        } else {
+            setPushStatus("error");
+            setPushMessage(result.message);
+            showError(result.message);
+        }
+    };
 
     const handleSubscribePush = async () => {
         setPushStatus("subscribing");
@@ -49,9 +102,11 @@ export default function Settings({ currentGoal, onUpdateGoal }: SettingsProps) {
         const result = await subscribeToPush();
         if (result.success) {
             setIsSubscribed(true);
-            setPushStatus("success");
-            setPushMessage("푸시 알림이 활성화되었습니다!");
+            setPushMessage("푸시 알림 활성화 완료! 테스트 알림 전송 중...");
             showToast("푸시 알림이 활성화되었습니다!", "success");
+
+            // Auto-send test notification
+            await sendTestAndShowResult();
         } else {
             setPushStatus("error");
             const errorMsg = result.error || "푸시 등록에 실패했습니다";
@@ -66,18 +121,7 @@ export default function Settings({ currentGoal, onUpdateGoal }: SettingsProps) {
             setPushStatus("error");
             return;
         }
-
-        setPushStatus("sending");
-        setPushMessage("");
-
-        const result = await sendTestPush();
-        if (result.success) {
-            setPushStatus("success");
-            setPushMessage(result.message);
-        } else {
-            setPushStatus("error");
-            setPushMessage(result.message);
-        }
+        await sendTestAndShowResult();
     };
 
     return (
@@ -127,24 +171,34 @@ export default function Settings({ currentGoal, onUpdateGoal }: SettingsProps) {
                                     <span className="text-amber-600 dark:text-amber-400 text-sm font-semibold">🔧 Admin Tools</span>
                                 </div>
 
+                                {swAvailable === null && (
+                                    <p className="text-xs text-gray-500 mb-2">서비스 워커 확인 중...</p>
+                                )}
+
+                                {swAvailable === false && (
+                                    <p className="text-xs text-red-500 mb-2">⚠️ 이 브라우저/기기에서 푸시 알림을 사용할 수 없습니다. 홈 화면에 앱을 추가해주세요.</p>
+                                )}
+
                                 <div className="space-y-2">
                                     {!isSubscribed && (
                                         <button
                                             onClick={handleSubscribePush}
-                                            disabled={pushStatus === "subscribing"}
-                                            className="w-full py-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-all active:scale-95"
+                                            disabled={pushStatus === "subscribing" || pushStatus === "sending" || swAvailable !== true}
+                                            className="w-full py-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-all active:scale-95"
                                         >
-                                            {pushStatus === "subscribing" ? "등록 중..." : "📲 푸시 알림 활성화"}
+                                            {pushStatus === "subscribing" ? "등록 중..." : pushStatus === "sending" ? "테스트 전송 중..." : "📲 푸시 알림 활성화 + 테스트"}
                                         </button>
                                     )}
 
-                                    <button
-                                        onClick={handleTestPush}
-                                        disabled={pushStatus === "sending" || !isSubscribed}
-                                        className="w-full py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-all active:scale-95"
-                                    >
-                                        {pushStatus === "sending" ? "전송 중..." : "🔔 푸시 테스트 전송"}
-                                    </button>
+                                    {isSubscribed && (
+                                        <button
+                                            onClick={handleTestPush}
+                                            disabled={pushStatus === "sending" || swAvailable !== true}
+                                            className="w-full py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-all active:scale-95"
+                                        >
+                                            {pushStatus === "sending" ? "전송 중..." : "🔔 푸시 테스트 전송"}
+                                        </button>
+                                    )}
                                 </div>
 
                                 {pushMessage && (
