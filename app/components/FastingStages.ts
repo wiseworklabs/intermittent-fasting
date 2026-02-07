@@ -20,12 +20,12 @@ export const FASTING_STAGES: FastingStage[] = [
         nameKo: "식후 상태",
         minHours: 0,
         maxHours: 4,
-        color: "#94a3b8", // slate
+        color: "#94a3b8", // slate-400
         icon: "🍽️",
         message: "Digestion in progress",
         messageKo: "소화 중입니다",
         description: "Body is digesting and absorbing nutrients",
-        descriptionKo: "몸이 음식을 소화하고 영양분을 흡수하고 있습니다"
+        descriptionKo: "몸이 영양분을 흡수하고 있어요 냠냠"
     },
     {
         id: "early",
@@ -33,12 +33,12 @@ export const FASTING_STAGES: FastingStage[] = [
         nameKo: "초기 단식",
         minHours: 4,
         maxHours: 8,
-        color: "#3b82f6", // blue
-        icon: "⏳",
+        color: "#60a5fa", // blue-400
+        icon: "🌤️",
         message: "Blood sugar stabilizing",
-        messageKo: "혈당이 안정되고 있습니다",
+        messageKo: "혈당이 안정되고 있어요",
         description: "Insulin levels dropping, body transitioning",
-        descriptionKo: "인슐린 수치가 떨어지고 몸이 전환 중입니다"
+        descriptionKo: "인슐린이 내려가고 있어요!"
     },
     {
         id: "gluconeogenesis",
@@ -46,12 +46,12 @@ export const FASTING_STAGES: FastingStage[] = [
         nameKo: "당신생",
         minHours: 8,
         maxHours: 12,
-        color: "#8b5cf6", // violet
+        color: "#c084fc", // purple-400
         icon: "🔄",
         message: "Liver producing glucose",
-        messageKo: "간에서 포도당을 생성 중",
+        messageKo: "에너지 전환 중",
         description: "Body creating glucose from non-carb sources",
-        descriptionKo: "몸이 탄수화물 외 자원에서 포도당을 만들고 있습니다"
+        descriptionKo: "몸이 스스로 에너지를 만들고 있어요"
     },
     {
         id: "ketosis",
@@ -59,12 +59,12 @@ export const FASTING_STAGES: FastingStage[] = [
         nameKo: "지방 연소",
         minHours: 12,
         maxHours: 18,
-        color: "#f97316", // orange
+        color: "#fb923c", // orange-400
         icon: "🔥",
         message: "Entering ketosis!",
-        messageKo: "키토시스 진입!",
+        messageKo: "지방이 타고 있어요!",
         description: "Body burning fat for energy",
-        descriptionKo: "몸이 에너지원으로 지방을 태우고 있습니다"
+        descriptionKo: "본격적으로 지방을 태우기 시작했어요 화이팅!"
     },
     {
         id: "deepKetosis",
@@ -72,12 +72,12 @@ export const FASTING_STAGES: FastingStage[] = [
         nameKo: "심화 키토시스",
         minHours: 18,
         maxHours: 24,
-        color: "#ef4444", // red
+        color: "#f472b6", // pink-400
         icon: "💪",
         message: "Maximum fat burning",
-        messageKo: "지방 연소 극대화",
+        messageKo: "체지방 연소 최고조!",
         description: "Peak fat oxidation and ketone production",
-        descriptionKo: "지방 산화와 케톤 생성이 최고조입니다"
+        descriptionKo: "놀라워요! 지방이 엄청나게 타고 있습니다"
     },
     {
         id: "autophagy",
@@ -85,12 +85,12 @@ export const FASTING_STAGES: FastingStage[] = [
         nameKo: "오토파지",
         minHours: 24,
         maxHours: 72,
-        color: "#22c55e", // green
+        color: "#4ade80", // green-400
         icon: "✨",
         message: "Cellular cleanup activated!",
-        messageKo: "세포 청소 활성화!",
+        messageKo: "세포가 젊어지고 있어요",
         description: "Body recycling damaged cells",
-        descriptionKo: "몸이 손상된 세포를 재활용하고 있습니다"
+        descriptionKo: "내 몸의 청소부가 활동 중입니다✨"
     }
 ];
 
