@@ -165,55 +165,54 @@ export default function Settings({ currentGoal, onUpdateGoal }: SettingsProps) {
                             </div>
                         </div>
 
-                        {isAdmin && (
-                            <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <span className="text-amber-600 dark:text-amber-400 text-sm font-semibold">🔧 Admin Tools</span>
-                                </div>
+                        <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
+                            <div className="flex items-center gap-2 mb-3">
+                                <span className="text-amber-600 dark:text-amber-400 text-sm font-semibold">🔔 Push Notifications</span>
+                            </div>
 
-                                {swAvailable === null && (
-                                    <p className="text-xs text-gray-500 mb-2">서비스 워커 확인 중...</p>
-                                )}
+                            {swAvailable === null && (
+                                <p className="text-xs text-gray-500 mb-2">서비스 워커 확인 중...</p>
+                            )}
 
-                                {swAvailable === false && (
-                                    <p className="text-xs text-red-500 mb-2">⚠️ 이 브라우저/기기에서 푸시 알림을 사용할 수 없습니다. 홈 화면에 앱을 추가해주세요.</p>
-                                )}
+                            {swAvailable === false && (
+                                <p className="text-xs text-red-500 mb-2">⚠️ 이 브라우저/기기에서 푸시 알림을 사용할 수 없습니다. 홈 화면에 앱을 추가해주세요.</p>
+                            )}
 
-                                <div className="space-y-2">
-                                    {!isSubscribed && (
-                                        <button
-                                            onClick={handleSubscribePush}
-                                            disabled={pushStatus === "subscribing" || pushStatus === "sending" || swAvailable !== true}
-                                            className="w-full py-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-all active:scale-95"
-                                        >
-                                            {pushStatus === "subscribing" ? "등록 중..." : pushStatus === "sending" ? "테스트 전송 중..." : "📲 푸시 알림 활성화 + 테스트"}
-                                        </button>
-                                    )}
-
-                                    {isSubscribed && (
-                                        <button
-                                            onClick={handleTestPush}
-                                            disabled={pushStatus === "sending" || swAvailable !== true}
-                                            className="w-full py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-all active:scale-95"
-                                        >
-                                            {pushStatus === "sending" ? "전송 중..." : "🔔 푸시 테스트 전송"}
-                                        </button>
-                                    )}
-                                </div>
-
-                                {pushMessage && (
-                                    <p className={`mt-2 text-xs text-center ${pushStatus === "success" ? "text-green-600" : "text-red-500"}`}>
-                                        {pushMessage}
-                                    </p>
+                            <div className="space-y-2">
+                                {!isSubscribed && (
+                                    <button
+                                        onClick={handleSubscribePush}
+                                        disabled={pushStatus === "subscribing" || pushStatus === "sending" || swAvailable !== true}
+                                        className="w-full py-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-all active:scale-95"
+                                    >
+                                        {pushStatus === "subscribing" ? "등록 중..." : pushStatus === "sending" ? "테스트 전송 중..." : "📲 푸시 알림 활성화 + 테스트"}
+                                    </button>
                                 )}
 
                                 {isSubscribed && (
-                                    <p className="mt-2 text-xs text-center text-green-600">
-                                        ✅ 푸시 알림 활성화됨
-                                    </p>
+                                    <button
+                                        onClick={handleTestPush}
+                                        disabled={pushStatus === "sending" || swAvailable !== true}
+                                        className="w-full py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-all active:scale-95"
+                                    >
+                                        {pushStatus === "sending" ? "전송 중..." : "🔔 푸시 테스트 전송"}
+                                    </button>
                                 )}
                             </div>
-                        )}
+
+                            {pushMessage && (
+                                <p className={`mt-2 text-xs text-center ${pushStatus === "success" ? "text-green-600" : "text-red-500"}`}>
+                                    {pushMessage}
+                                </p>
+                            )}
+
+                            {isSubscribed && (
+                                <p className="mt-2 text-xs text-center text-green-600">
+                                    ✅ 푸시 알림 활성화됨
+                                </p>
+                            )}
+                        </div>
+
 
                         <div className="flex justify-end">
                             <button
