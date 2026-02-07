@@ -2,6 +2,7 @@ import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
+import logtail from "@/lib/logtail"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
     adapter: PrismaAdapter(prisma),
@@ -23,6 +24,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     events: {
         async createUser({ user }) {
+            // Log to Logtail
+            if (process.env.LOGTAIL_SOURCE_TOKEN) {
+                logtail.info("New User Created", {
+                    userId: user.id || "unknown",
+                    email: user.email || "unknown",
+                    name: user.name || "unknown",
+                });
+            } else {
+                console.warn("LOGTAIL_SOURCE_TOKEN not set, skipping Logtail log.");
+            }
+
             const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
             const CHANNEL_ID = "C0ADHQNT82H"; // User specified channel
 
