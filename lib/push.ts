@@ -14,11 +14,26 @@ export async function subscribeToPush(): Promise<PushResult> {
     }
 
     try {
-        console.log("[Push] Waiting for service worker...");
+        // First, make sure SW is registered
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        console.log("[Push] Current registrations:", registrations.length);
 
-        // Add timeout to prevent infinite waiting
+        if (registrations.length === 0) {
+            // Try to register SW manually
+            console.log("[Push] No SW found, registering...");
+            try {
+                await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+                console.log("[Push] SW registered successfully");
+            } catch (regError) {
+                return { success: false, error: `Service Worker 등록 실패: ${regError instanceof Error ? regError.message : "Unknown"}` };
+            }
+        }
+
+        console.log("[Push] Waiting for service worker to be ready...");
+
+        // Wait for SW with longer timeout for iOS
         const timeoutPromise = new Promise<null>((_, reject) =>
-            setTimeout(() => reject(new Error("Service worker timeout")), 10000)
+            setTimeout(() => reject(new Error("Service Worker가 준비되지 않았습니다. 앱을 다시 설치해주세요.")), 15000)
         );
 
         const registration = await Promise.race([
@@ -26,7 +41,7 @@ export async function subscribeToPush(): Promise<PushResult> {
             timeoutPromise
         ]) as ServiceWorkerRegistration;
 
-        console.log("[Push] Service worker ready:", registration);
+        console.log("[Push] Service worker ready:", registration.scope);
 
         // Get existing subscription or create new one
         let subscription = await registration.pushManager.getSubscription();
