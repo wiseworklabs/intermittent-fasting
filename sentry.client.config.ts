@@ -19,4 +19,17 @@ Sentry.init({
             blockAllMedia: true,
         }),
     ],
+
+    // Filter out automatic breadcrumbs to reduce noise
+    beforeBreadcrumb(breadcrumb) {
+        if (
+            breadcrumb.category === 'ui.click' ||
+            breadcrumb.category === 'navigation' ||
+            breadcrumb.category === 'xhr' ||
+            breadcrumb.category === 'console'
+        ) {
+            return null;
+        }
+        return breadcrumb;
+    },
 });
