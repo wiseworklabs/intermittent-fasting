@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 
 interface SettingsProps {
     currentGoal: number;
@@ -9,6 +10,23 @@ interface SettingsProps {
 
 export default function Settings({ currentGoal, onUpdateGoal }: SettingsProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const { data: session } = useSession();
+
+    const isAdmin = session?.user?.email?.endsWith("@wiseworklabs.com");
+
+    const handleTestNotification = () => {
+        if ("Notification" in window && Notification.permission === "granted") {
+            new Notification("🔔 FastTrack 테스트 알림", {
+                body: "단식 목표를 달성했습니다! 축하합니다! 🎉",
+                icon: "/icon-192x192.png",
+                badge: "/icon-192x192.png",
+            });
+        } else if ("Notification" in window) {
+            alert("알림 권한이 필요합니다. 브라우저 설정에서 알림을 허용해주세요.");
+        } else {
+            alert("이 브라우저는 알림을 지원하지 않습니다.");
+        }
+    };
 
     return (
         <>
@@ -50,6 +68,20 @@ export default function Settings({ currentGoal, onUpdateGoal }: SettingsProps) {
                                 <span>48h</span>
                             </div>
                         </div>
+
+                        {isAdmin && (
+                            <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <span className="text-amber-600 dark:text-amber-400 text-sm font-semibold">🔧 Admin Tools</span>
+                                </div>
+                                <button
+                                    onClick={handleTestNotification}
+                                    className="w-full py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-medium rounded-lg transition-all active:scale-95"
+                                >
+                                    🔔 알림 테스트
+                                </button>
+                            </div>
+                        )}
 
                         <div className="flex justify-end">
                             <button
