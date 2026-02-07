@@ -23,16 +23,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     events: {
         async createUser({ user }) {
-            if (!process.env.SLACK_WEBHOOK_URL) {
-                console.warn("SLACK_WEBHOOK_URL is not set. Skipping notification.");
+            const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
+            const CHANNEL_ID = "C0ADHQNT82H"; // User specified channel
+
+            if (!SLACK_BOT_TOKEN) {
+                console.warn("SLACK_BOT_TOKEN is not set. Skipping notification.");
                 return;
             }
 
             try {
-                await fetch(process.env.SLACK_WEBHOOK_URL, {
+                await fetch("https://slack.com/api/chat.postMessage", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${SLACK_BOT_TOKEN}`
+                    },
                     body: JSON.stringify({
+                        channel: CHANNEL_ID,
                         text: `🎉 *새로운 사용자가 가입했습니다!* \n\n👤 *이름:* ${user.name || "알 수 없음"}\n📧 *이메일:* ${user.email}\n🆔 *ID:* ${user.id}`
                     }),
                 });
