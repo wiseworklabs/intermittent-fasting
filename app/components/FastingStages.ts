@@ -101,6 +101,8 @@ export const GOAL_PRESETS = [
     { hours: 18, label: "18h", description: "Moderate", descriptionKo: "중급" },
     { hours: 20, label: "20h", description: "Advanced", descriptionKo: "상급" },
     { hours: 24, label: "24h", description: "Expert", descriptionKo: "전문가" },
+    { hours: 36, label: "36h", description: "Monk", descriptionKo: "고수" },
+    { hours: 48, label: "48h", description: "Master", descriptionKo: "달인" },
 ];
 
 export function getCurrentStage(elapsedHours: number): FastingStage {

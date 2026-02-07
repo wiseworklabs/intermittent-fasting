@@ -57,30 +57,57 @@ export default function Controls({ isFasting, goalHours, onStart, onEnd, onCance
         <>
             <div className="flex flex-col gap-6 w-full max-w-xs animate-in fade-in slide-in-from-bottom-4 duration-500">
                 {/* Goal Duration Selector */}
-                <div className="space-y-3 bg-white/50 dark:bg-gray-800/50 p-4 rounded-3xl backdrop-blur-sm border border-white/20 shadow-sm">
-                    <span className="flex items-center gap-2 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">
+                {/* Goal Duration Selector - Stepper Style */}
+                <div className="bg-white dark:bg-gray-800/80 p-5 rounded-[2rem] shadow-lg border border-gray-100 dark:border-gray-700 flex flex-col items-center gap-3 backdrop-blur-md">
+                    <span className="flex items-center gap-2 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         <Clock size={12} />
-                        목표 시간 설정
+                        목표 시간
                     </span>
-                    <div className="grid grid-cols-3 gap-2">
-                        {GOAL_PRESETS.map((preset) => (
-                            <button
-                                key={preset.hours}
-                                onClick={() => onSetGoal(preset.hours)}
-                                className={`relative py-3 px-2 rounded-2xl text-sm font-bold transition-all ${goalHours === preset.hours
-                                    ? "bg-orange-400 text-white shadow-lg shadow-orange-400/30 scale-105"
-                                    : "bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-gray-600 border border-gray-100 dark:border-gray-600"
-                                    }`}
-                            >
-                                <span className="text-lg">{preset.hours}</span>
-                                <span className="text-[10px] ml-0.5">시간</span>
-                                {preset.isRecommended && goalHours !== preset.hours && (
-                                    <span className="absolute -top-2 -right-1 text-[8px] bg-red-400 text-white px-1.5 py-0.5 rounded-full shadow-sm animate-bounce">
-                                        추천
-                                    </span>
-                                )}
-                            </button>
-                        ))}
+
+                    <div className="flex items-center justify-between w-full gap-4">
+                        <button
+                            onClick={() => {
+                                const currentIndex = GOAL_PRESETS.findIndex(p => p.hours === goalHours);
+                                if (currentIndex > 0) onSetGoal(GOAL_PRESETS[currentIndex - 1].hours);
+                                else if (currentIndex === -1) {
+                                    // If current goal is not in presets, find closest or default
+                                    onSetGoal(16);
+                                }
+                            }}
+                            className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 active:scale-90 transition-all text-2xl font-bold"
+                        >
+                            -
+                        </button>
+
+                        <div className="flex flex-col items-center">
+                            <span className="text-5xl font-black text-gray-800 dark:text-white font-mono tracking-tighter">
+                                {goalHours}
+                            </span>
+                            <span className="text-xs font-bold text-orange-500">
+                                {GOAL_PRESETS.find(p => p.hours === goalHours)?.isRecommended ? "✨ 추천 (인기)" : "시간"}
+                            </span>
+                        </div>
+
+                        <button
+                            onClick={() => {
+                                const currentIndex = GOAL_PRESETS.findIndex(p => p.hours === goalHours);
+                                if (currentIndex < GOAL_PRESETS.length - 1 && currentIndex !== -1) {
+                                    onSetGoal(GOAL_PRESETS[currentIndex + 1].hours);
+                                } else if (currentIndex === -1) {
+                                    onSetGoal(16);
+                                }
+                            }}
+                            className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 active:scale-90 transition-all text-2xl font-bold"
+                        >
+                            +
+                        </button>
+                    </div>
+
+                    <div className="h-1 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden mt-1">
+                        <div
+                            className="h-full bg-orange-400 rounded-full transition-all duration-300"
+                            style={{ width: `${(GOAL_PRESETS.findIndex(p => p.hours === goalHours) / (GOAL_PRESETS.length - 1)) * 100}%` }}
+                        />
                     </div>
                 </div>
 
@@ -91,7 +118,7 @@ export default function Controls({ isFasting, goalHours, onStart, onEnd, onCance
                 >
                     <span className="absolute inset-0 rounded-[2rem] bg-white/20 translate-y-2 blur opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     <Play fill="currentColor" size={28} className="translate-x-1" />
-                    <span>START!</span>
+                    <span>단식 시작!</span>
                 </button>
             </div>
 

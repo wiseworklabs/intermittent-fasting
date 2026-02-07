@@ -15,7 +15,7 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-jua), "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   overscroll-behavior-y: none;
   /* Prevent pull-to-refresh on mobile if desired, standard for apps */
   padding-bottom: env(safe-area-inset-bottom);

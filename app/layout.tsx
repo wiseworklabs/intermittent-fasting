@@ -1,20 +1,25 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Jua } from "next/font/google";
 import "./globals.css";
 import ServiceWorkerRegister from "./components/ServiceWorkerRegister";
 import NotificationManager from "./components/NotificationManager";
 import InstallPrompt from "./components/InstallPrompt";
 import { Providers } from "./providers";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const jua = Jua({
+  weight: "400",
   subsets: ["latin"],
+  variable: "--font-jua",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  themeColor: "#ffffff",
+};
 
 export const metadata: Metadata = {
   title: "FastTrack",
@@ -24,6 +29,9 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "FastTrack",
+  },
+  formatDetection: {
+    telephone: false,
   },
 };
 
@@ -35,7 +43,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${jua.variable} font-sans antialiased`}
       >
         <Providers>
           {children}
