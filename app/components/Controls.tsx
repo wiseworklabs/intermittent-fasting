@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useSession, signIn } from "next-auth/react";
 import { GOAL_PRESETS } from "./FastingStages";
-import { Play, Square, X, Clock, Calendar } from "lucide-react";
+import { Play, Square, X, Clock, Calendar, LogIn } from "lucide-react";
 
 interface ControlsProps {
     isFasting: boolean;
@@ -16,6 +17,8 @@ interface ControlsProps {
 export default function Controls({ isFasting, goalHours, onStart, onEnd, onCancel, onSetGoal }: ControlsProps) {
     const [showStartModal, setShowStartModal] = useState(false);
     const [customDateTime, setCustomDateTime] = useState("");
+    const { data: session } = useSession();
+    const isLoggedIn = !!session?.user;
 
     const handleStartNow = () => {
         onStart();
@@ -112,14 +115,28 @@ export default function Controls({ isFasting, goalHours, onStart, onEnd, onCance
                 </div>
 
                 {/* Start Button */}
-                <button
-                    onClick={() => setShowStartModal(true)}
-                    className="group relative w-full py-5 bg-gradient-to-br from-orange-400 to-pink-500 hover:from-orange-500 hover:to-pink-600 text-white rounded-[2rem] font-black text-2xl shadow-[0_10px_30px_-5px_rgba(251,146,60,0.5)] active:scale-95 transition-all flex items-center justify-center gap-3"
-                >
-                    <span className="absolute inset-0 rounded-[2rem] bg-white/20 translate-y-2 blur opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    <Play fill="currentColor" size={28} className="translate-x-1" />
-                    <span>단식 시작!</span>
-                </button>
+                {!isLoggedIn ? (
+                    <button
+                        onClick={() => signIn("google")}
+                        className="group relative w-full py-5 bg-gradient-to-br from-gray-400 to-gray-500 hover:from-blue-500 hover:to-purple-600 text-white rounded-[2rem] font-black text-xl shadow-[0_10px_30px_-5px_rgba(100,100,100,0.5)] hover:shadow-[0_10px_30px_-5px_rgba(59,130,246,0.5)] active:scale-95 transition-all flex flex-col items-center justify-center gap-2 py-6"
+                    >
+                        <span className="absolute inset-0 rounded-[2rem] bg-white/20 translate-y-2 blur opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        <div className="flex items-center gap-2">
+                            <LogIn size={24} />
+                            <span>로그인 필요</span>
+                        </div>
+                        <span className="text-xs font-normal opacity-90">단식을 시작하려면 로그인해주세요</span>
+                    </button>
+                ) : (
+                    <button
+                        onClick={() => setShowStartModal(true)}
+                        className="group relative w-full py-5 bg-gradient-to-br from-orange-400 to-pink-500 hover:from-orange-500 hover:to-pink-600 text-white rounded-[2rem] font-black text-2xl shadow-[0_10px_30px_-5px_rgba(251,146,60,0.5)] active:scale-95 transition-all flex items-center justify-center gap-3"
+                    >
+                        <span className="absolute inset-0 rounded-[2rem] bg-white/20 translate-y-2 blur opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        <Play fill="currentColor" size={28} className="translate-x-1" />
+                        <span>단식 시작!</span>
+                    </button>
+                )}
             </div>
 
             {/* Start Time Modal */}
