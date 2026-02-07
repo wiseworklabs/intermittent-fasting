@@ -3,12 +3,19 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import webpush from "web-push";
 
-// Configure web-push with VAPID keys
-webpush.setVapidDetails(
-    "mailto:biz@wiseworklabs.com",
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-    process.env.VAPID_PRIVATE_KEY!
-);
+// VAPID configuration (lazy initialization)
+let vapidConfigured = false;
+
+function ensureVapidConfigured() {
+    if (!vapidConfigured && process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+        webpush.setVapidDetails(
+            "mailto:biz@wiseworklabs.com",
+            process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+            process.env.VAPID_PRIVATE_KEY
+        );
+        vapidConfigured = true;
+    }
+}
 
 export async function POST(request: NextRequest) {
     const session = await auth();
@@ -22,6 +29,9 @@ export async function POST(request: NextRequest) {
     if (!isAdmin) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
+
+    // Configure VAPID at runtime
+    ensureVapidConfigured();
 
     try {
         const { title, body, userId } = await request.json();
