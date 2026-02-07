@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Zap, LogIn, LogOut, RefreshCw } from "lucide-react";
 import { useSession, signIn, signOut } from "next-auth/react";
 
-const APP_VERSION = "1.0.3";
+const APP_VERSION = "1.0.4";
 
 export default function TopBar() {
     const { data: session } = useSession();
@@ -17,9 +17,9 @@ export default function TopBar() {
     const handleLogoClick = async () => {
         setShowVersion(true);
 
-        // Fetch latest version from server
+        // Fetch latest version from API (not cached)
         try {
-            const res = await fetch("/version.json?t=" + Date.now(), { cache: "no-store" });
+            const res = await fetch("/api/version?t=" + Date.now());
             const data = await res.json();
             setLatestVersion(data.version);
             setIsOutdated(data.version !== APP_VERSION);
