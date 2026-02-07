@@ -1,46 +1,69 @@
 // Helper to manage push notification subscriptions
 
 export async function subscribeToPush(): Promise<PushSubscription | null> {
+    console.log("[Push] Starting subscription process...");
+
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-        console.warn("Push notifications are not supported");
+        console.warn("[Push] Push notifications are not supported");
         return null;
     }
 
     try {
-        const registration = await navigator.serviceWorker.ready;
+        console.log("[Push] Waiting for service worker...");
+
+        // Add timeout to prevent infinite waiting
+        const timeoutPromise = new Promise<null>((_, reject) =>
+            setTimeout(() => reject(new Error("Service worker timeout")), 10000)
+        );
+
+        const registration = await Promise.race([
+            navigator.serviceWorker.ready,
+            timeoutPromise
+        ]) as ServiceWorkerRegistration;
+
+        console.log("[Push] Service worker ready:", registration);
 
         // Get existing subscription or create new one
         let subscription = await registration.pushManager.getSubscription();
+        console.log("[Push] Existing subscription:", subscription);
 
         if (!subscription) {
             const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+            console.log("[Push] VAPID public key available:", !!publicKey);
+
             if (!publicKey) {
-                console.error("VAPID public key not found");
+                console.error("[Push] VAPID public key not found");
                 return null;
             }
 
+            console.log("[Push] Creating new subscription...");
             subscription = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: urlBase64ToUint8Array(publicKey) as BufferSource,
             });
+            console.log("[Push] New subscription created:", subscription.endpoint);
         }
 
         // Save subscription to server
+        console.log("[Push] Saving to server...");
         const response = await fetch("/api/push/subscribe", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ subscription }),
         });
 
+        console.log("[Push] Server response status:", response.status);
+
         if (!response.ok) {
-            console.error("Failed to save subscription to server");
+            const errorData = await response.json().catch(() => ({}));
+            console.error("[Push] Failed to save subscription:", errorData);
             return null;
         }
 
-        console.log("Push subscription saved successfully");
+        console.log("[Push] Subscription saved successfully!");
         return subscription;
     } catch (error) {
-        console.error("Failed to subscribe to push:", error);
+        console.error("[Push] Failed to subscribe:", error);
         return null;
     }
 }
