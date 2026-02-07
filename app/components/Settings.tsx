@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { subscribeToPush, sendTestPush } from "@/lib/push";
+import { useToast } from "./Toast";
 
 interface SettingsProps {
     currentGoal: number;
@@ -15,6 +16,7 @@ export default function Settings({ currentGoal, onUpdateGoal }: SettingsProps) {
     const [pushStatus, setPushStatus] = useState<"idle" | "subscribing" | "sending" | "success" | "error">("idle");
     const [pushMessage, setPushMessage] = useState("");
     const [isSubscribed, setIsSubscribed] = useState(false);
+    const { showToast, showError } = useToast();
 
     const isAdmin = session?.user?.email?.endsWith("@wiseworklabs.com");
 
@@ -39,6 +41,7 @@ export default function Settings({ currentGoal, onUpdateGoal }: SettingsProps) {
             if (permission !== "granted") {
                 setPushStatus("error");
                 setPushMessage("알림 권한이 거부되었습니다");
+                showError("알림 권한이 거부되었습니다");
                 return;
             }
         }
@@ -48,9 +51,11 @@ export default function Settings({ currentGoal, onUpdateGoal }: SettingsProps) {
             setIsSubscribed(true);
             setPushStatus("success");
             setPushMessage("푸시 알림이 활성화되었습니다!");
+            showToast("푸시 알림이 활성화되었습니다!", "success");
         } else {
             setPushStatus("error");
             setPushMessage("푸시 등록에 실패했습니다");
+            showError("푸시 등록에 실패했습니다. 콘솔을 확인하세요.");
         }
     };
 

@@ -4,6 +4,7 @@ import "./globals.css";
 import ServiceWorkerRegister from "./components/ServiceWorkerRegister";
 import NotificationManager from "./components/NotificationManager";
 import InstallPrompt from "./components/InstallPrompt";
+import { ToastProvider } from "./components/Toast";
 import { Providers } from "./providers";
 
 const jua = Jua({
@@ -46,10 +47,12 @@ export default function RootLayout({
         className={`${jua.variable} font-sans antialiased`}
       >
         <Providers>
-          {children}
-          <InstallPrompt />
-          <NotificationManager />
-          <ServiceWorkerRegister />
+          <ToastProvider>
+            {children}
+            <InstallPrompt />
+            <NotificationManager />
+            <ServiceWorkerRegister />
+          </ToastProvider>
         </Providers>
       </body>
     </html>
