@@ -2,7 +2,7 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
 // Credentials from info.md
 const REGION = "ap-northeast-1";
-const BUCKET = "workwiselabs";
+const BUCKET = "wiseworklabs";
 const KEY = "test/hello.txt";
 const BODY = "Hello from Antigravity Verification!";
 

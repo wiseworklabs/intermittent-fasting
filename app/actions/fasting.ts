@@ -31,7 +31,7 @@ export async function getFastingLogs() {
     return { active: activeFast, history };
 }
 
-export async function startFast(goalHours: number) {
+export async function startFast(goalHours: number, customStartTime?: Date) {
     const session = await auth();
     if (!session?.user?.id) throw new Error("Unauthorized");
 
@@ -44,7 +44,7 @@ export async function startFast(goalHours: number) {
     return await prisma.fastingLog.create({
         data: {
             userId: session.user.id,
-            startTime: new Date(),
+            startTime: customStartTime || new Date(),
             goalHours,
         },
     });

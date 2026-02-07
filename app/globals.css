@@ -18,6 +18,10 @@ body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   overscroll-behavior-y: none;
   /* Prevent pull-to-refresh on mobile if desired, standard for apps */
+  padding-bottom: env(safe-area-inset-bottom);
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 /* PWA mobile optimizations */

@@ -15,6 +15,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session({ session, user }) {
             if (session.user) {
                 session.user.id = user.id
+                // @ts-expect-error user is typed as AdapterUser which might not have nickname in the default type definition yet
+                session.user.nickname = user.nickname
             }
             return session
         },

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ServiceWorkerRegister from "./components/ServiceWorkerRegister";
+import NotificationManager from "./components/NotificationManager";
+import InstallPrompt from "./components/InstallPrompt";
 import { Providers } from "./providers";
 
 const geistSans = Geist({
@@ -31,12 +33,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="ko">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
           {children}
+          <InstallPrompt />
+          <NotificationManager />
           <ServiceWorkerRegister />
         </Providers>
       </body>

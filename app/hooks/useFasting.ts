@@ -77,20 +77,20 @@ export function useFasting() {
     }, [state, isLoaded, user]);
 
     // 3. Actions
-    const startFast = async () => {
+    const startFast = async (customStartTime?: number) => {
         if (state.isFasting) return;
-        const now = Date.now();
+        const startTime = customStartTime || Date.now();
 
         // Optimistic
         setState((prev) => ({
             ...prev,
             isFasting: true,
-            startTime: now,
+            startTime: startTime,
         }));
 
         if (user) {
             try {
-                const log = await serverStartFast(state.goalHours);
+                const log = await serverStartFast(state.goalHours, customStartTime ? new Date(customStartTime) : undefined);
                 setState(prev => ({ ...prev, currentLogId: log.id }));
             } catch (e) {
                 console.error(e);

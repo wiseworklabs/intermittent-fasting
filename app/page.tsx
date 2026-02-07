@@ -29,14 +29,16 @@ export default function Home() {
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center gap-10 py-8">
-        <Timer isFasting={isFasting} startTime={startTime} />
+        <Timer isFasting={isFasting} startTime={startTime} goalHours={goalHours} />
 
         <div className="w-full flex justify-center">
           <Controls
             isFasting={isFasting}
+            goalHours={goalHours}
             onStart={startFast}
             onEnd={endFast}
             onCancel={cancelFast}
+            onSetGoal={setGoal}
           />
         </div>
 

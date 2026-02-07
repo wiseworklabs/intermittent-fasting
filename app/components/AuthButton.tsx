@@ -1,6 +1,7 @@
 "use client";
 
 import { useSession, signIn, signOut } from "next-auth/react";
+import Link from "next/link";
 
 export default function AuthButton() {
     const { data: session } = useSession();
@@ -8,14 +9,32 @@ export default function AuthButton() {
     if (session?.user) {
         return (
             <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-500 hidden sm:inline">
-                    {session.user.name || session.user.email?.split('@')[0]}
-                </span>
+                <Link
+                    href="/profile"
+                    className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                >
+                    {session.user.image ? (
+                        <img
+                            src={session.user.image}
+                            alt="Profile"
+                            className="w-6 h-6 rounded-full"
+                        />
+                    ) : (
+                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
+                            <span className="text-xs font-bold text-white">
+                                {(session.user.name || session.user.email || "U")[0].toUpperCase()}
+                            </span>
+                        </div>
+                    )}
+                    <span className="text-xs text-gray-600 dark:text-gray-400 hidden sm:inline max-w-[80px] truncate">
+                        {session.user.name || session.user.email?.split('@')[0]}
+                    </span>
+                </Link>
                 <button
                     onClick={() => signOut()}
                     className="text-sm font-medium text-red-500 hover:text-red-700 transition"
                 >
-                    Logout
+                    로그아웃
                 </button>
             </div>
         );
