@@ -88,6 +88,26 @@ export function useFasting() {
             startTime: startTime,
         }));
 
+        // Send log to Better Stack
+        try {
+            await fetch('/api/log', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: '🍽️ Fasting Started',
+                    data: {
+                        userId: user?.id || 'anonymous',
+                        userName: user?.name || 'Anonymous',
+                        goalHours: state.goalHours,
+                        startTime: new Date(startTime).toISOString(),
+                        isCustomStart: !!customStartTime
+                    }
+                })
+            });
+        } catch (e) {
+            console.error('Failed to log fasting start:', e);
+        }
+
         if (user) {
             try {
                 const log = await serverStartFast(state.goalHours, customStartTime ? new Date(customStartTime) : undefined);
