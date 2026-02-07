@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 export async function getFastingLogs() {
     const session = await auth();
@@ -41,13 +42,21 @@ export async function startFast(goalHours: number, customStartTime?: Date) {
     });
     if (existing) return existing;
 
-    return await prisma.fastingLog.create({
+    const log = await prisma.fastingLog.create({
         data: {
             userId: session.user.id,
             startTime: customStartTime || new Date(),
             goalHours,
         },
     });
+
+    logger.info("단식 시작", {
+        userId: session.user.id,
+        goalHours,
+        customStartTime: customStartTime?.toISOString()
+    });
+
+    return log;
 }
 
 export async function endFast(logId: string) {
@@ -62,14 +71,24 @@ export async function endFast(logId: string) {
 
     const now = new Date();
     const duration = Math.floor((now.getTime() - log.startTime.getTime()) / 1000);
+    const hours = Math.round(duration / 3600 * 10) / 10;
 
-    return await prisma.fastingLog.update({
+    const result = await prisma.fastingLog.update({
         where: { id: logId },
         data: {
             endTime: now,
             duration,
         },
     });
+
+    logger.info("단식 완료", {
+        userId: session.user.id,
+        duration: `${hours}시간`,
+        goalHours: log.goalHours,
+        success: duration >= log.goalHours * 3600
+    });
+
+    return result;
 }
 
 export async function cancelFast(logId: string) {
@@ -81,6 +100,8 @@ export async function cancelFast(logId: string) {
     });
 
     if (!log || log.userId !== session.user.id) throw new Error("Not found or unauthorized");
+
+    logger.info("단식 취소", { userId: session.user.id, logId });
 
     return await prisma.fastingLog.delete({
         where: { id: logId }
