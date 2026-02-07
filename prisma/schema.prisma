@@ -17,6 +17,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   fastingLogs   FastingLog[]
+  pushSubscriptions PushSubscription[]
 }
 
 model Account {
@@ -61,6 +62,17 @@ model FastingLog {
   endTime   DateTime?
   duration  Int?     // seconds
   goalHours Int      @default(16)
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String   // Public key for encryption
+  auth      String   // Auth secret
   createdAt DateTime @default(now())
   
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fasttrack-v2';
+const CACHE_NAME = 'fasttrack-v3';
 const URLS_TO_CACHE = [
     '/',
     '/manifest.json',
@@ -40,23 +40,37 @@ self.addEventListener('fetch', (event) => {
 
 // Push notification handler
 self.addEventListener('push', (event) => {
-    const options = {
-        body: event.data ? event.data.text() : '단식을 확인해보세요!',
+    let data = {
+        title: 'FastTrack 🌙',
+        body: '단식을 확인해보세요!',
         icon: '/icon-192x192.png',
         badge: '/icon-192x192.png',
+        data: { url: '/' }
+    };
+
+    // Try to parse JSON payload from server
+    if (event.data) {
+        try {
+            data = { ...data, ...event.data.json() };
+        } catch (e) {
+            data.body = event.data.text();
+        }
+    }
+
+    const options = {
+        body: data.body,
+        icon: data.icon || '/icon-192x192.png',
+        badge: data.badge || '/icon-192x192.png',
         vibrate: [100, 50, 100],
-        data: {
-            dateOfArrival: Date.now(),
-            primaryKey: 1
-        },
+        data: data.data || { url: '/' },
         actions: [
-            { action: 'explore', title: '앱 열기' },
+            { action: 'open', title: '앱 열기' },
             { action: 'close', title: '닫기' }
         ]
     };
 
     event.waitUntil(
-        self.registration.showNotification('FastTrack 🌙', options)
+        self.registration.showNotification(data.title, options)
     );
 });
 

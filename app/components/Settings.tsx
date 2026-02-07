@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { subscribeToPush, sendTestPush } from "@/lib/push";
 
 interface SettingsProps {
     currentGoal: number;
@@ -11,20 +12,65 @@ interface SettingsProps {
 export default function Settings({ currentGoal, onUpdateGoal }: SettingsProps) {
     const [isOpen, setIsOpen] = useState(false);
     const { data: session } = useSession();
+    const [pushStatus, setPushStatus] = useState<"idle" | "subscribing" | "sending" | "success" | "error">("idle");
+    const [pushMessage, setPushMessage] = useState("");
+    const [isSubscribed, setIsSubscribed] = useState(false);
 
     const isAdmin = session?.user?.email?.endsWith("@wiseworklabs.com");
 
-    const handleTestNotification = () => {
-        if ("Notification" in window && Notification.permission === "granted") {
-            new Notification("🔔 FastTrack 테스트 알림", {
-                body: "단식 목표를 달성했습니다! 축하합니다! 🎉",
-                icon: "/icon-192x192.png",
-                badge: "/icon-192x192.png",
+    // Check if already subscribed to push
+    useEffect(() => {
+        if ("serviceWorker" in navigator && "PushManager" in window) {
+            navigator.serviceWorker.ready.then((registration) => {
+                registration.pushManager.getSubscription().then((subscription) => {
+                    setIsSubscribed(!!subscription);
+                });
             });
-        } else if ("Notification" in window) {
-            alert("알림 권한이 필요합니다. 브라우저 설정에서 알림을 허용해주세요.");
+        }
+    }, []);
+
+    const handleSubscribePush = async () => {
+        setPushStatus("subscribing");
+        setPushMessage("");
+
+        // Request notification permission first
+        if ("Notification" in window && Notification.permission !== "granted") {
+            const permission = await Notification.requestPermission();
+            if (permission !== "granted") {
+                setPushStatus("error");
+                setPushMessage("알림 권한이 거부되었습니다");
+                return;
+            }
+        }
+
+        const subscription = await subscribeToPush();
+        if (subscription) {
+            setIsSubscribed(true);
+            setPushStatus("success");
+            setPushMessage("푸시 알림이 활성화되었습니다!");
         } else {
-            alert("이 브라우저는 알림을 지원하지 않습니다.");
+            setPushStatus("error");
+            setPushMessage("푸시 등록에 실패했습니다");
+        }
+    };
+
+    const handleTestPush = async () => {
+        if (!isSubscribed) {
+            setPushMessage("먼저 푸시 알림을 활성화해주세요");
+            setPushStatus("error");
+            return;
+        }
+
+        setPushStatus("sending");
+        setPushMessage("");
+
+        const result = await sendTestPush();
+        if (result.success) {
+            setPushStatus("success");
+            setPushMessage(result.message);
+        } else {
+            setPushStatus("error");
+            setPushMessage(result.message);
         }
     };
 
@@ -43,7 +89,7 @@ export default function Settings({ currentGoal, onUpdateGoal }: SettingsProps) {
 
             {isOpen && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-sm p-6 shadow-xl relative animate-in zoom-in-95 duration-200">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-sm p-6 shadow-xl relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
                         <h3 className="text-xl font-bold mb-4">Settings</h3>
 
                         <div className="mb-6">
@@ -71,15 +117,41 @@ export default function Settings({ currentGoal, onUpdateGoal }: SettingsProps) {
 
                         {isAdmin && (
                             <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
-                                <div className="flex items-center gap-2 mb-2">
+                                <div className="flex items-center gap-2 mb-3">
                                     <span className="text-amber-600 dark:text-amber-400 text-sm font-semibold">🔧 Admin Tools</span>
                                 </div>
-                                <button
-                                    onClick={handleTestNotification}
-                                    className="w-full py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-medium rounded-lg transition-all active:scale-95"
-                                >
-                                    🔔 알림 테스트
-                                </button>
+
+                                <div className="space-y-2">
+                                    {!isSubscribed && (
+                                        <button
+                                            onClick={handleSubscribePush}
+                                            disabled={pushStatus === "subscribing"}
+                                            className="w-full py-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-all active:scale-95"
+                                        >
+                                            {pushStatus === "subscribing" ? "등록 중..." : "📲 푸시 알림 활성화"}
+                                        </button>
+                                    )}
+
+                                    <button
+                                        onClick={handleTestPush}
+                                        disabled={pushStatus === "sending" || !isSubscribed}
+                                        className="w-full py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-all active:scale-95"
+                                    >
+                                        {pushStatus === "sending" ? "전송 중..." : "🔔 푸시 테스트 전송"}
+                                    </button>
+                                </div>
+
+                                {pushMessage && (
+                                    <p className={`mt-2 text-xs text-center ${pushStatus === "success" ? "text-green-600" : "text-red-500"}`}>
+                                        {pushMessage}
+                                    </p>
+                                )}
+
+                                {isSubscribed && (
+                                    <p className="mt-2 text-xs text-center text-green-600">
+                                        ✅ 푸시 알림 활성화됨
+                                    </p>
+                                )}
                             </div>
                         )}
 
