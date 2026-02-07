@@ -31,7 +31,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-black font-[family-name:var(--font-geist-sans)] pb-24 pt-14">
+    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-black font-[family-name:var(--font-geist-sans)] pb-24 pt-[calc(3.5rem+env(safe-area-inset-top))]">
       <TopBar />
 
       <main className="flex-1 w-full max-w-md mx-auto px-6 overflow-hidden">

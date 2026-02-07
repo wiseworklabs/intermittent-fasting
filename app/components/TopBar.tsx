@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Zap, LogIn, LogOut, RefreshCw } from "lucide-react";
 import { useSession, signIn, signOut } from "next-auth/react";
 
-const APP_VERSION = "1.0.10";
+const APP_VERSION = "1.0.11";
 
 export default function TopBar() {
     const { data: session } = useSession();
@@ -48,7 +48,7 @@ export default function TopBar() {
     };
 
     return (
-        <header className="fixed top-0 left-0 right-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md z-50 border-b border-gray-100 dark:border-gray-800 h-14">
+        <header className="fixed top-0 left-0 right-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md z-50 border-b border-gray-100 dark:border-gray-800 h-[calc(3.5rem+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] transition-all duration-200">
             <div className="max-w-md mx-auto h-full flex items-center justify-between px-4">
                 {/* Left: User Info */}
                 <div className="flex items-center gap-2 min-w-0">
